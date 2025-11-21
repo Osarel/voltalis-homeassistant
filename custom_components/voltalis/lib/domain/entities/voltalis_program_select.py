@@ -67,7 +67,7 @@ class VoltalisProgramSelect(VoltalisProgramEntity, SelectEntity):
 
         # Then enable the selected program
         await self.coordinator.client.set_program(
-            id=selected_program.id,
+            program_id=selected_program.id,
             name=selected_program.name,
             enabled=True,
         )
