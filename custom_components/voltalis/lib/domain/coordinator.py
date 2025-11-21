@@ -17,6 +17,7 @@ from custom_components.voltalis.lib.domain.exceptions import (
 from custom_components.voltalis.lib.domain.models.device import VoltalisDevice, VoltalisDeviceTypeEnum
 from custom_components.voltalis.lib.domain.models.device_health import VoltalisDeviceHealth
 from custom_components.voltalis.lib.domain.models.manual_setting import VoltalisManualSetting
+from custom_components.voltalis.lib.domain.models.program import VoltalisProgram
 from custom_components.voltalis.lib.domain.models.subscriber_contract import VoltalisSubscriberContract
 
 _LOGGER = logging.getLogger(__name__)
@@ -58,6 +59,7 @@ class VoltalisCoordinator(DataUpdateCoordinator[dict[int, VoltalisCoordinatorDat
         self.__entry = entry
         self._was_unavailable = False  # Track previous availability state for one-shot logging
         self.__contracts: list[VoltalisSubscriberContract] | None = None  # Store contracts separately
+        self.__programs: list[VoltalisProgram] | None = None  # Store programs
 
     @property
     def client(self) -> VoltalisClient:
@@ -68,6 +70,11 @@ class VoltalisCoordinator(DataUpdateCoordinator[dict[int, VoltalisCoordinatorDat
     def contracts(self) -> list[VoltalisSubscriberContract]:
         """Get cached subscriber contracts."""
         return self.__contracts or []
+
+    @property
+    def programs(self) -> list[VoltalisProgram]:
+        """Get cached programs."""
+        return self.__programs or []
 
     async def async_fetch_contracts(self) -> None:
         """Fetch subscriber contracts (called once at setup or manually via service)."""
@@ -97,6 +104,9 @@ class VoltalisCoordinator(DataUpdateCoordinator[dict[int, VoltalisCoordinatorDat
             devices = await self.__client.get_devices()
             devices_health = await self.__client.get_devices_health()
             manual_settings = await self.__client.get_manual_settings()
+
+            # Fetch programs
+            self.__programs = await self.__client.get_programs()
 
             # We remove 1 hour because we can't fetch data from the current our
             target_datetime = self.__date_provider.get_now() - timedelta(hours=1)
