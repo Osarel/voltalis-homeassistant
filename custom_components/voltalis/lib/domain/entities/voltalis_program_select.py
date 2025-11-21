@@ -11,6 +11,8 @@ from custom_components.voltalis.lib.domain.voltalis_program_entity import Voltal
 
 _LOGGER = logging.getLogger(__name__)
 
+NO_PROGRAM_SELECTED = "no_program_selected"
+NO_PROGRAM_AVAILABLE = "no_program_available"
 
 class VoltalisProgramSelect(VoltalisProgramEntity, SelectEntity):
     """Select entity for Voltalis program management."""
@@ -22,7 +24,7 @@ class VoltalisProgramSelect(VoltalisProgramEntity, SelectEntity):
         """Initialize the program select entity."""
         super().__init__(entry)
         self._attr_options = []
-        self._attr_current_option = None
+        self._attr_current_option = NO_PROGRAM_AVAILABLE
 
     @property
     def icon(self) -> str:
@@ -38,20 +40,21 @@ class VoltalisProgramSelect(VoltalisProgramEntity, SelectEntity):
 
         if not programs:
             _LOGGER.warning("No programs available")
-            self._attr_options = []
-            self._attr_current_option = None
+            self._attr_options = [NO_PROGRAM_SELECTED]
+            self._attr_current_option = NO_PROGRAM_AVAILABLE
             self.async_write_ha_state()
             return
 
         # Build list of program names as options
-        self._attr_options = [program.name for program in programs]
-        
+        self._attr_options = [p.name for p in programs]
+        self._attr_options.append(NO_PROGRAM_SELECTED)
+
         # Find the currently enabled program
         enabled_program = next((p for p in programs if p.enabled), None)
         if enabled_program:
             self._attr_current_option = enabled_program.name
         else:
-            self._attr_current_option = None
+            self._attr_current_option = NO_PROGRAM_SELECTED
 
         self.async_write_ha_state()
 
