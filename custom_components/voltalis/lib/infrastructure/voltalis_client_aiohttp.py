@@ -20,6 +20,9 @@ from custom_components.voltalis.lib.domain.models.manual_setting import (
     VoltalisManualSetting,
     VoltalisManualSettingUpdate,
 )
+from custom_components.voltalis.lib.domain.models.program import (
+    VoltalisProgram,
+)
 from custom_components.voltalis.lib.domain.models.subscriber_contract import (
     VoltalisSubscriberContract,
     VoltalisTimeRange,
@@ -352,6 +355,53 @@ class VoltalisClientAiohttp(VoltalisClient):
             raise VoltalisValidationException("Failed to parse subscriber contracts") from err
 
         return contracts
+
+    async def get_programs(self) -> list[VoltalisProgram]:
+        """Get all programs."""
+
+        programs_response: list[dict] = await self.__send_request(
+            url="/api/site/{site_id}/programming/program",
+            method="GET",
+            retry=False,
+        )
+
+        programs: list[VoltalisProgram] = []
+
+        try:
+            for program_data in programs_response:
+                program = VoltalisProgram(
+                    id=program_data["id"],
+                    name=program_data["name"],
+                    enabled=program_data["enabled"],
+                )
+                programs.append(program)
+        except ValidationError as err:
+            self.__logger.error("Error parsing programs: %s", err)
+            raise VoltalisValidationException(*err.args) from err
+
+        return programs
+
+    async def set_program(self, program_id: int, name: str, enabled: bool) -> None:
+        """Enable/disable a program."""
+
+        payload = {
+            "name": name,
+            "enabled": enabled,
+        }
+
+        await self.__send_request(
+            url=f"/api/site/{{site_id}}/programming/program/{program_id}",
+            method="PUT",
+            retry=False,
+            json=payload,
+        )
+
+        self.__logger.info(
+            "Program %s updated: %s (enabled: %s)",
+            program_id,
+            name,
+            enabled,
+        )
 
     async def __send_request(
         self,
