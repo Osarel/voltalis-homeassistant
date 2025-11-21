@@ -35,7 +35,6 @@ class VoltalisProgramSelect(VoltalisProgramEntity, SelectEntity):
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         programs = self.coordinator.programs
-        programming_state = self.coordinator.programming_state
 
         if not programs:
             _LOGGER.warning("No programs available")
@@ -46,12 +45,6 @@ class VoltalisProgramSelect(VoltalisProgramEntity, SelectEntity):
 
         # Build list of program names as options
         self._attr_options = [program.name for program in programs]
-
-        # Set current option based on programming state
-        if programming_state:
-            self._attr_current_option = programming_state.program_name
-        else:
-            self._attr_current_option = None
 
         self.async_write_ha_state()
 
