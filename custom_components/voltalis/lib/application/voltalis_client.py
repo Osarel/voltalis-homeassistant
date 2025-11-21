@@ -8,6 +8,9 @@ from custom_components.voltalis.lib.domain.models.manual_setting import (
     VoltalisManualSetting,
     VoltalisManualSettingUpdate,
 )
+from custom_components.voltalis.lib.domain.models.program import (
+    VoltalisProgram,
+)
 from custom_components.voltalis.lib.domain.models.subscriber_contract import VoltalisSubscriberContract
 
 
@@ -76,4 +79,19 @@ class VoltalisClient(ABC):
     @abstractmethod
     async def get_subscriber_contracts(self) -> list[VoltalisSubscriberContract]:
         """Get subscriber contracts from the Voltalis servers"""
+        ...
+
+    @abstractmethod
+    async def get_programs(self) -> list[VoltalisProgram]:
+        """Get all programs from the Voltalis servers"""
+        ...
+
+    @abstractmethod
+    async def set_program(self, program_id: int, name: str, enabled: bool) -> None:
+        """Enable/disable a program on the Voltalis servers
+
+        Args:
+            program_id: The ID of the program to update
+            program_update: The program update to apply
+        """
         ...
