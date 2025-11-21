@@ -45,6 +45,13 @@ class VoltalisProgramSelect(VoltalisProgramEntity, SelectEntity):
 
         # Build list of program names as options
         self._attr_options = [program.name for program in programs]
+        
+        # Find the currently enabled program
+        enabled_program = next((p for p in programs if p.enabled), None)
+        if enabled_program:
+            self._attr_current_option = enabled_program.name
+        else:
+            self._attr_current_option = None
 
         self.async_write_ha_state()
 
